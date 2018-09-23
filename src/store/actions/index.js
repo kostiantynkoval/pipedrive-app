@@ -10,13 +10,13 @@ const tokenString = `?api_token=${process.env.REACT_APP_API_TOKEN}`
 
 // Action Creators
 
-export const getClients = () => dispatch => {
+export const getClients = (start = 0, limit = 10) => dispatch => {
   dispatch(actionRequested(GET_CLIENTS_REQUEST))
   axios
-    .get(`${url}/persons${tokenString}`)
+    .get(`${url}/persons${tokenString}&start=${start}&limit=${limit}`)
     .then(res => {
       if(res.data.success) {
-        dispatch(actionSucceed(GET_CLIENTS_SUCCESS, res.data.data))
+        dispatch(actionSucceed(GET_CLIENTS_SUCCESS, res.data))
       } else {
         dispatch(actionFailed(GET_CLIENTS_FAIL))
       }
@@ -28,8 +28,6 @@ export const getClients = () => dispatch => {
 }
 
 export const getClientDetails = id => dispatch => {
-
-  console.log('id', id);
 
   dispatch(actionRequested(GET_CLIENT_DETAILS_REQUEST))
   axios

@@ -1,38 +1,172 @@
-import React, { Component } from 'react';
-import {connect} from 'react-redux';
+import React, { Component } from 'react'
+import {connect} from 'react-redux'
+import {compose} from 'redux'
 import PropTypes from 'prop-types'
 import {getClients} from '../../store/actions'
+import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd'
 import ClientItem from '../client-item/ClientItem'
-import List from '@material-ui/core/List';
+import List from '@material-ui/core/List'
+import { withStyles } from '@material-ui/core/styles'
+import TablePagination from '@material-ui/core/TablePagination'
+
+const styles = () => ({
+    caption: {
+        background: 'red'
+    },
+    selectRoot: {
+      marginRight: 0
+    }
+});
+
+const reorder = (list, startIndex, endIndex) => {
+  const result = Array.from(list)
+  const [removed] = result.splice(startIndex, 1)
+  result.splice(endIndex, 0, removed)
+  return result
+};
+
+const getItemStyle = (isDragging, draggableStyle) => ({
+  // some basic styles to make the items look a bit nicer
+  marginBottom: '7px',
+
+  // change background colour if dragging
+  background: isDragging && 'lightgreen',
+
+  // styles we need to apply on draggables
+  ...draggableStyle,
+})
+
+const getListStyle = isDraggingOver => ({
+  background: isDraggingOver && 'lightblue',
+})
 
 class ClientsList extends Component {
 
+  constructor(props) {
+    super(props)
+    this.state = {
+      items: props.clients,
+      page: 0,
+      rowsPerPage: 10,
+    }
+  }
+
+  onDragEnd = (result) => {
+    // dropped outside the list
+    if (!result.destination) {
+      return
+    }
+
+    const items = reorder(
+      this.state.items,
+      result.source.index,
+      result.destination.index
+    )
+
+    this.setState({
+      items,
+    })
+  }
+
+  handleChangePage = () => {}
+
+  onPrevClicked = () => {
+      this.props.getClients(this.props.pagination.start - this.props.pagination.limit, this.props.pagination.limit)
+  }
+
+  onNextClicked = () => {
+      this.props.getClients(this.props.pagination.next_start, this.props.pagination.limit)
+  }
+
+  handleChangeRowsPerPage = event => {
+    if(event.target.value !== this.state.rowsPerPage) {
+      this.setState({ rowsPerPage: event.target.value })
+      this.props.getClients(0, event.target.value)
+    }
+  }
+
   render() {
-    const { clients } =this.props
+    const { items, rowsPerPage, page} = this.state
+    const { pagination: { start, limit, more_items_in_collection, next_start }, classes } = this.props
     return (
-      <List>
-        {
-          clients.map(client => <ClientItem key={client.id} {...client} />)
-        }
-      </List>
+      <DragDropContext onDragEnd={this.onDragEnd} >
+        <List>
+        <Droppable droppableId="droppable">
+            { (provided, snapshot) => (
+            <div ref={provided.innerRef}
+                 style={getListStyle(snapshot.isDraggingOver)}>
+            {
+              items.map( (client, index) =>
+                <Draggable key={client.id} draggableId={client.id} index={index}>
+                  { (provided, snapshot) => (
+                    <div ref={provided.innerRef}
+                         {...provided.draggableProps}
+                         {...provided.dragHandleProps}
+                         style={getItemStyle(
+                             snapshot.isDragging,
+                             provided.draggableProps.style
+                         )} >
+                      <ClientItem {...client}/>
+                    </div>
+                  ) }
+                </Draggable> )
+            }
+            </div>
+            ) }
+        </Droppable>
+          <TablePagination
+            classes={classes}
+            //variant="caption"
+            component="div"
+            count={items.length}
+            rowsPerPage={rowsPerPage}
+            page={page}
+            rowsPerPageOptions={[5,10,15,20]}
+            backIconButtonProps={{
+              disabled: start === 0,
+              'aria-label': 'Previous Page',
+              'data-caption': 'Prev',
+              onClick: this.onPrevClicked
+            }}
+            nextIconButtonProps={{
+              disabled: !more_items_in_collection,
+              'aria-label': 'Next Page',
+              'data-caption': 'Next',
+              onClick: this.onNextClicked
+            }}
+            onChangePage={this.handleChangePage}
+            onChangeRowsPerPage={this.handleChangeRowsPerPage}
+          />
+        </List>
+      </DragDropContext>
     );
   }
 }
 
-function mapStateToProps(state) {
-  return {
-    clientsList: state.clients.list,
-    isLoading: state.clients.isLoading
-  }
-}
 
 ClientsList.propTypes = {
-  classes: PropTypes.object,
+  classes: PropTypes.object.isRequired,
+  pagination: PropTypes.object.isRequired,
+  clients: PropTypes.array.isRequired,
 }
 
-export default connect(
-  mapStateToProps,
+export default compose(
+  withStyles(styles),
+  connect(
+    state => ({
+      pagination: state.clients.pagination
+    }),
+    dispatch => ({
+      getClients: (start, limit) => dispatch(getClients(start, limit))
+    })
+  )
+)(ClientsList);
+
+connect(
+  state => ({
+      pagination: state.clients.pagination
+  }),
   dispatch => ({
     getClients: () => dispatch(getClients())
   })
-)(ClientsList);
+)

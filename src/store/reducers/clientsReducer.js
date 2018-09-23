@@ -3,14 +3,14 @@ import {
   GET_CLIENT_DETAILS_REQUEST, GET_CLIENT_DETAILS_SUCCESS, GET_CLIENT_DETAILS_FAIL,
   OPEN_DETAILS_WINDOW, CLOSE_DETAILS_WINDOW
 } from '../actions/actionTypes'
-import { push } from 'react-router-dom'
 
 const initialState = {
   list: [],
   selectedClient: null,
   isLoading: false,
   isClientLoading: false,
-  isDetailsActive: false
+  isDetailsActive: false,
+  pagination: {}
 }
 
 const clientsReducer = (state = initialState, action) => {
@@ -24,7 +24,8 @@ const clientsReducer = (state = initialState, action) => {
       return {
         ...state,
         isLoading: false,
-        list: action.payload
+        list: action.payload.data,
+        pagination: action.payload['additional_data'].pagination
       }
     case GET_CLIENTS_FAIL:
       return {
