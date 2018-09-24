@@ -14,12 +14,14 @@ const styles = {
     border: '1px solid rgba(227,227,227, 0.7)',
     marginBottom: 7
   },
-  itemText: {
+  primary: {
     flexGrow: 1,
+    fontFamily: 'Open Sans, sans-serif',
   },
   secondary: {
     display: 'flex',
-    alignItems: 'center'
+    alignItems: 'center',
+    fontFamily: 'Open Sans, sans-serif',
   },
   spanStyles: {
     lineHeight: '0.875rem',
@@ -28,7 +30,8 @@ const styles = {
   },
   avatar: {
     color: '#0098ED',
-    fontSize: '1rem'
+    fontSize: '1rem',
+    fontFamily: 'Open Sans, sans-serif',
   },
   link: {
     textDecoration: 'none'
@@ -49,7 +52,7 @@ const ClientItem = (props) => {
         <ListItemText
           primary={props.name}
           secondary={<Secondary spanStyles={props.classes.spanStyles} classProps={props.classes.secondary}>{props.org_id.name}</Secondary>}
-          className={props.classes.itemText}
+          classes={{primary: props.classes.primary}}
         />
         <ListItemAvatar>
           {

@@ -10,12 +10,17 @@ import { withStyles } from '@material-ui/core/styles'
 import TablePagination from '@material-ui/core/TablePagination'
 
 const styles = () => ({
-    caption: {
-        background: 'red'
-    },
-    selectRoot: {
-      marginRight: 0
+  caption: {
+    '&:last-of-type': {
+      display: 'none'
     }
+  },
+  selectRoot: {
+    marginRight: 0
+  },
+  actions: {
+    marginLeft: 5
+  }
 });
 
 const reorder = (list, startIndex, endIndex) => {
@@ -46,8 +51,6 @@ class ClientsList extends Component {
     super(props)
     this.state = {
       items: props.clients,
-      page: 0,
-      rowsPerPage: 10,
     }
   }
 
@@ -79,14 +82,15 @@ class ClientsList extends Component {
   }
 
   handleChangeRowsPerPage = event => {
+    console.log('event', event.target.value, this.state.rowsPerPage)
     if(event.target.value !== this.state.rowsPerPage) {
-      this.setState({ rowsPerPage: event.target.value })
       this.props.getClients(0, event.target.value)
+      console.log('event', event.target.value, this.state)
     }
   }
 
   render() {
-    const { items, rowsPerPage, page} = this.state
+    const { items, rowsPerPage } = this.state
     const { pagination: { start, limit, more_items_in_collection, next_start }, classes } = this.props
     return (
       <DragDropContext onDragEnd={this.onDragEnd} >
@@ -119,19 +123,17 @@ class ClientsList extends Component {
             //variant="caption"
             component="div"
             count={items.length}
-            rowsPerPage={rowsPerPage}
-            page={page}
+            rowsPerPage={items.length}
+            page={0}
             rowsPerPageOptions={[5,10,15,20]}
             backIconButtonProps={{
               disabled: start === 0,
               'aria-label': 'Previous Page',
-              'data-caption': 'Prev',
               onClick: this.onPrevClicked
             }}
             nextIconButtonProps={{
               disabled: !more_items_in_collection,
               'aria-label': 'Next Page',
-              'data-caption': 'Next',
               onClick: this.onNextClicked
             }}
             onChangePage={this.handleChangePage}

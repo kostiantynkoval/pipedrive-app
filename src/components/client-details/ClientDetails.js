@@ -1,5 +1,6 @@
 import React from 'react'
 import PropTypes from 'prop-types'
+import { Link } from 'react-router-dom'
 import { connect } from 'react-redux'
 import { compose } from 'redux'
 import { getClientDetails, openDetailsWindow, closeDetailsWindow } from '../../store/actions'
@@ -14,8 +15,6 @@ import IconButton from '@material-ui/core/IconButton';
 import Avatar from '@material-ui/core/Avatar';
 import Times from '../times/Times'
 import Loader from '../loader/Loader'
-
-
 
 const styles = theme => ({
   paper: {
@@ -42,7 +41,8 @@ const styles = theme => ({
   },
   title: {
     fontSize: '0.875rem',
-    fontWeight: 'bold'
+    fontWeight: 'bold',
+    fontFamily: 'Open Sans, sans-serif',
   },
   action: {
     marginTop: 0
@@ -61,6 +61,8 @@ const styles = theme => ({
     margin: 10,
     width: 60,
     height: 60,
+    fontFamily: 'Open Sans, sans-serif',
+    color: '#0098ED',
   },
   userName: {
     fontSize: '0.775rem',
@@ -105,7 +107,12 @@ const styles = theme => ({
   },
   button: {
     textTransform: 'none',
-    padding: '6px 24px'
+    padding: '6px 24px',
+    fontFamily: 'Open Sans, sans-serif',
+    fontWeight: 'bold'
+  },
+  link: {
+    textDecoration: 'none'
   }
 });
 
@@ -138,7 +145,7 @@ class ClientDetails extends React.Component {
   };
 
   render() {
-    const { classes, selectedClient, isClientLoading } = this.props;
+    const { classes, selectedClient, isClientLoading, match, isDetailsActive } = this.props;
     if(isClientLoading) {
       return <Loader/>
     }
@@ -146,7 +153,7 @@ class ClientDetails extends React.Component {
         <Modal
           aria-labelledby="simple-modal-title"
           aria-describedby="simple-modal-description"
-          open={this.props.isDetailsActive}
+          open={isDetailsActive}
           onClose={this.handleClose}
           className={classes.modal}
         >
@@ -196,6 +203,14 @@ class ClientDetails extends React.Component {
               </div>
             </CardContent>
             <CardActions className={classes.actions}>
+              <Link  className={classes.link} to={`/clients/${match.params.id}/update`}>
+                <Button variant="outlined" color="primary" className={classes.button} onClick={this.handleClose} >
+                  Update
+                </Button>
+              </Link>
+              <Button variant="outlined" color="secondary" className={classes.button} onClick={this.handleClose} >
+                Delete
+              </Button>
               <Button variant="outlined" className={classes.button} onClick={this.handleClose} >
                 Back
               </Button>
