@@ -1,4 +1,4 @@
-import React from 'react'
+import React, {Component, Fragment} from 'react'
 import PropTypes from 'prop-types'
 import { Link } from 'react-router-dom'
 import { connect } from 'react-redux'
@@ -15,6 +15,7 @@ import IconButton from '@material-ui/core/IconButton';
 import Avatar from '@material-ui/core/Avatar';
 import Times from '../times/Times'
 import Loader from '../loader/Loader'
+import Popover from '../popover/Popover'
 
 const styles = theme => ({
   paper: {
@@ -116,7 +117,11 @@ const styles = theme => ({
   }
 });
 
-class ClientDetails extends React.Component {
+class ClientDetails extends Component {
+
+  state = {
+    isConfirmOpen: false
+  }
 
   componentDidMount() {
     if(this.props.selectedClient !== null && this.props.selectedClient.id.toString() === this.props.match.params.id) {
@@ -144,6 +149,18 @@ class ClientDetails extends React.Component {
     this.props.history.push('/')
   };
 
+  confirmDelete = () => {
+    this.setState({isConfirmOpen: true})
+  }
+
+  deleteItem = () => {
+
+  }
+
+  closeWindow = () => {
+    this.setState({isConfirmOpen: false})
+  }
+
   render() {
     const { classes, selectedClient, isClientLoading, match, isDetailsActive } = this.props;
     if(isClientLoading) {
@@ -157,7 +174,10 @@ class ClientDetails extends React.Component {
           onClose={this.handleClose}
           className={classes.modal}
         >
-          <Card className={classes.paper}>
+          <Fragment>
+              <Popover isOpen={this.state.isConfirmOpen} handleClickAgreeButton={this.deleteItem} handleClickDisagreeButton={this.closeWindow} />
+
+            <Card className={classes.paper}>
             <CardHeader
               classes={{root: classes.root, title: classes.title, action: classes.action}}
               action={
@@ -204,11 +224,11 @@ class ClientDetails extends React.Component {
             </CardContent>
             <CardActions className={classes.actions}>
               <Link  className={classes.link} to={`/clients/${match.params.id}/update`}>
-                <Button variant="outlined" color="primary" className={classes.button} onClick={this.handleClose} >
+                <Button variant="outlined" color="primary" className={classes.button} >
                   Update
                 </Button>
               </Link>
-              <Button variant="outlined" color="secondary" className={classes.button} onClick={this.handleClose} >
+              <Button variant="outlined" color="secondary" className={classes.button} onClick={this.confirmDelete} >
                 Delete
               </Button>
               <Button variant="outlined" className={classes.button} onClick={this.handleClose} >
@@ -216,6 +236,7 @@ class ClientDetails extends React.Component {
               </Button>
             </CardActions>
           </Card>
+          </Fragment>
         </Modal>
     ) : null
   }

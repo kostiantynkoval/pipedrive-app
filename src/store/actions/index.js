@@ -2,6 +2,7 @@ import axios from 'axios'
 import {
   GET_CLIENTS_REQUEST, GET_CLIENTS_SUCCESS, GET_CLIENTS_FAIL,
   CREATE_CLIENT_REQUEST, CREATE_CLIENT_SUCCESS, CREATE_CLIENT_FAIL,
+  UPDATE_CLIENT_REQUEST, UPDATE_CLIENT_SUCCESS, UPDATE_CLIENT_FAIL,
   GET_CLIENT_DETAILS_REQUEST, GET_CLIENT_DETAILS_SUCCESS, GET_CLIENT_DETAILS_FAIL,
   GET_ORGANIZATIONS_REQUEST, GET_ORGANIZATIONS_SUCCESS, GET_ORGANIZATIONS_FAIL,
   CLOSE_DETAILS_WINDOW, OPEN_DETAILS_WINDOW
@@ -67,8 +68,7 @@ export const getOrganizations = () => dispatch => {
     })
 }
 
-export const addClient = (data, history) => dispatch => {
-
+export const addClient = (data, history, start, limit) => dispatch => {
   dispatch(actionRequested(CREATE_CLIENT_REQUEST))
   axios
     .post(`${url}/persons${tokenString}`, data)
@@ -76,6 +76,7 @@ export const addClient = (data, history) => dispatch => {
       if(res.data.success) {
         dispatch(actionSucceed(CREATE_CLIENT_SUCCESS, res.data.data))
         history.push('/')
+        dispatch(getClients(start, limit))
       } else {
         dispatch(actionFailed(CREATE_CLIENT_FAIL))
       }
@@ -84,6 +85,25 @@ export const addClient = (data, history) => dispatch => {
       console.log('addClient err', err);
       dispatch(actionFailed(CREATE_CLIENT_FAIL))
     })
+}
+
+export const updateClient = (data, history, start, limit) => dispatch => {
+    dispatch(actionRequested(UPDATE_CLIENT_REQUEST))
+    axios
+        .put(`${url}/persons/${data.id}${tokenString}`, data)
+        .then(res => {
+            if(res.data.success) {
+                dispatch(actionSucceed(UPDATE_CLIENT_SUCCESS, res.data.data))
+                history.push('/')
+                dispatch(getClients(start, limit))
+            } else {
+                dispatch(actionFailed(UPDATE_CLIENT_FAIL))
+            }
+        })
+        .catch(err => {
+            console.log('addClient err', err);
+            dispatch(actionFailed(UPDATE_CLIENT_FAIL))
+        })
 }
 
 export const openDetailsWindow = () => ({

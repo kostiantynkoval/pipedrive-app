@@ -2,7 +2,14 @@ import React, {Component} from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { compose } from 'redux'
-import { getClientDetails, openDetailsWindow, closeDetailsWindow, getOrganizations, addClient } from '../../store/actions'
+import {
+  getClientDetails,
+  openDetailsWindow,
+  closeDetailsWindow,
+  getOrganizations,
+  addClient,
+  updateClient
+} from '../../store/actions'
 import { withStyles } from '@material-ui/core/styles'
 import Modal from '@material-ui/core/Modal'
 import Button from '@material-ui/core/Button'
@@ -162,9 +169,10 @@ class AddClient extends Component {
   }
 
   handleSubmit = event => {
+    const { pagination, updateClient, addClient, match, history} = this.props;
     const { name, email, org_id, phone} = this.state;
     event.preventDefault()
-    if(this.state.name === '') {
+    if(name === '') {
       this.setState({error: 'Name is required'})
       return
     }
@@ -174,11 +182,18 @@ class AddClient extends Component {
       org_id,
       phone
     }
-    this.props.addClient(data, this.props.history)
+    if(match.path === '/clients/:id/update') {
+      data.id = match.params.id
+      updateClient(data, this.props.history, pagination.start, pagination.limit)
+    } else {
+      addClient(data, this.props.history, pagination.start, pagination.limit)
+    }
+
   }
 
   render() {
-    const { classes, selectedClient, isClientLoading, isDetailsActive, organizations } = this.props;
+    const { classes, selectedClient, isClientLoading, isDetailsActive, organizations, pagination } = this.props;
+    console.log(pagination)
     return selectedClient !== null ? (
       <Modal
         aria-labelledby="simple-modal-title"
@@ -269,6 +284,7 @@ const mapStateToProps = state => ({
   isClientLoading: state.clients.isClientLoading,
   organizations: state.clients.organizations,
   selectedClient: state.clients.selectedClient,
+  pagination: state.clients.pagination
 })
 
 AddClient.propTypes = {
@@ -276,7 +292,8 @@ AddClient.propTypes = {
   isDetailsActive: PropTypes.bool.isRequired,
   isClientLoading: PropTypes.bool.isRequired,
   organizations: PropTypes.array,
-  selectedClient: PropTypes.object
+  selectedClient: PropTypes.object,
+  pagination: PropTypes.object.isRequired
 };
 
 export default compose(
@@ -285,7 +302,8 @@ export default compose(
     mapStateToProps,
     dispatch => ({
       getOrganizations: () => dispatch(getOrganizations()),
-      addClient: (data, history) => dispatch(addClient(data, history)),
+      addClient: (data, history, start, limit) => dispatch(addClient(data, history, start, limit)),
+      updateClient: (data, history, start, limit) => dispatch(updateClient(data, history, start, limit)),
       getClientDetails: id => dispatch(getClientDetails(id)),
       openDetailsWindow: () => dispatch(openDetailsWindow()),
       closeDetailsWindow: () => dispatch(closeDetailsWindow())

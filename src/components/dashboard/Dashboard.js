@@ -10,7 +10,6 @@ import Loader from '../loader/Loader'
 import ClientsList from '../clients-list/ClientsList'
 import {getClients} from '../../store/actions'
 
-
 const styles = {
   container: {
     padding: '0 15px',

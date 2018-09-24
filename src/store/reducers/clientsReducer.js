@@ -1,6 +1,7 @@
 import {
   GET_CLIENTS_REQUEST, GET_CLIENTS_SUCCESS, GET_CLIENTS_FAIL,
   CREATE_CLIENT_REQUEST, CREATE_CLIENT_SUCCESS, CREATE_CLIENT_FAIL,
+  UPDATE_CLIENT_REQUEST, UPDATE_CLIENT_SUCCESS, UPDATE_CLIENT_FAIL,
   GET_CLIENT_DETAILS_REQUEST, GET_CLIENT_DETAILS_SUCCESS, GET_CLIENT_DETAILS_FAIL,
   GET_ORGANIZATIONS_REQUEST, GET_ORGANIZATIONS_SUCCESS, GET_ORGANIZATIONS_FAIL,
   OPEN_DETAILS_WINDOW, CLOSE_DETAILS_WINDOW
@@ -49,6 +50,21 @@ const clientsReducer = (state = initialState, action) => {
       return {
         ...state,
         isClientLoading: false
+      }
+    case UPDATE_CLIENT_REQUEST:
+      return {
+          ...state,
+          isClientLoading: true
+      }
+    case UPDATE_CLIENT_SUCCESS:
+      return {
+          ...state,
+          isClientLoading: false,
+      }
+    case UPDATE_CLIENT_FAIL:
+      return {
+          ...state,
+          isClientLoading: false
       }
     case GET_ORGANIZATIONS_REQUEST:
       return {
