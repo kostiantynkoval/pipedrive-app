@@ -32,6 +32,7 @@ const styles = {
     color: '#0098ED',
     fontSize: '1rem',
     fontFamily: 'Open Sans, sans-serif',
+    textTransform: 'uppercase'
   },
   link: {
     textDecoration: 'none'
@@ -45,19 +46,41 @@ const Secondary = ({children, classProps, spanStyles}) => (
   </span>
 )
 
+const getAvatar = (props) => {
+  if(props.first_name && props.last_name) {
+    return `${props.first_name.charAt(0)}${props.last_name.charAt(0)}`
+  } else if(props.name) {
+    const name = props.name.split(' ')
+    if(name.length > 1) {
+      return `${name[0].charAt(0)}${name[name.length -1 ].charAt(0)}`
+    } else {
+      return `${name[0].charAt(0)}`
+    }
+  } else {
+    return '??'
+  }
+
+}
+
 const ClientItem = (props) => {
+  const orgObjName = props.org_id ? props.org_id.name : ''
+  const orgName = props.org_name ? props.org_name : ''
+  const org = orgObjName || orgName;
+  const pictureId = props.picture_id || props.picture || null
   return (
     <Link className={props.classes.link} to={`/clients/${props.id}`}>
       <ListItem button className={props.classes.item}>
         <ListItemText
           primary={props.name}
-          secondary={<Secondary spanStyles={props.classes.spanStyles} classProps={props.classes.secondary}>{props.org_id.name}</Secondary>}
+          secondary={<Secondary spanStyles={props.classes.spanStyles} classProps={props.classes.secondary}>{org}</Secondary>}
           classes={{primary: props.classes.primary}}
         />
         <ListItemAvatar>
           {
-            props.picture_id === null ?
-              <Avatar className={props.classes.avatar}>{props.first_name.charAt(0)}{props.last_name.charAt(0)}</Avatar> :
+            pictureId === null ?
+              <Avatar className={props.classes.avatar}>
+                { getAvatar(props) }
+              </Avatar> :
               <Avatar className={props.classes.avatar}>OP</Avatar> // TODO find out how to fetch image by id
           }
 

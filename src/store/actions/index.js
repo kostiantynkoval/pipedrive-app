@@ -1,8 +1,10 @@
 import axios from 'axios'
 import {
   GET_CLIENTS_REQUEST, GET_CLIENTS_SUCCESS, GET_CLIENTS_FAIL,
+  SEARCH_CLIENTS_REQUEST, SEARCH_CLIENTS_SUCCESS, SEARCH_CLIENTS_FAIL,
   CREATE_CLIENT_REQUEST, CREATE_CLIENT_SUCCESS, CREATE_CLIENT_FAIL,
   UPDATE_CLIENT_REQUEST, UPDATE_CLIENT_SUCCESS, UPDATE_CLIENT_FAIL,
+  REMOVE_CLIENT_REQUEST, REMOVE_CLIENT_SUCCESS, REMOVE_CLIENT_FAIL,
   GET_CLIENT_DETAILS_REQUEST, GET_CLIENT_DETAILS_SUCCESS, GET_CLIENT_DETAILS_FAIL,
   GET_ORGANIZATIONS_REQUEST, GET_ORGANIZATIONS_SUCCESS, GET_ORGANIZATIONS_FAIL,
   CLOSE_DETAILS_WINDOW, OPEN_DETAILS_WINDOW
@@ -13,10 +15,10 @@ const tokenString = `?api_token=${process.env.REACT_APP_API_TOKEN}`
 
 // Action Creators
 
-export const getClients = (start = 0, limit = 10) => dispatch => {
+export const getClients = (start, limit) => dispatch => {
   dispatch(actionRequested(GET_CLIENTS_REQUEST))
   axios
-    .get(`${url}/persons${tokenString}&start=${start}&limit=${limit}`)
+    .get(`${url}/persons${tokenString}&start=${start}&limit=${limit}&sort=7876c07667bae0482c5d9bad11c0268688fbc544`)
     .then(res => {
       if(res.data.success) {
         dispatch(actionSucceed(GET_CLIENTS_SUCCESS, res.data))
@@ -27,6 +29,23 @@ export const getClients = (start = 0, limit = 10) => dispatch => {
     .catch(err => {
       console.log('getClientsRequest err', err);
       dispatch(actionFailed(GET_CLIENTS_FAIL))
+    })
+}
+
+export const searchClients = (term, start, limit) => dispatch => {
+  dispatch(actionRequested(SEARCH_CLIENTS_REQUEST))
+  axios
+    .get(`${url}/persons/find${tokenString}&term=${term}&start=${start}&limit=${limit}`)
+    .then(res => {
+      if(res.data.success) {
+        dispatch(actionSucceed(SEARCH_CLIENTS_SUCCESS, {data: res.data.data, additional_data: res.data.additional_data,  term}))
+      } else {
+        dispatch(actionFailed(SEARCH_CLIENTS_FAIL))
+      }
+    })
+    .catch(err => {
+      console.log('getClientsRequest err', err);
+      dispatch(actionFailed(SEARCH_CLIENTS_FAIL))
     })
 }
 
@@ -94,8 +113,8 @@ export const updateClient = (data, history, start, limit) => dispatch => {
         .then(res => {
             if(res.data.success) {
                 dispatch(actionSucceed(UPDATE_CLIENT_SUCCESS, res.data.data))
-                history.push('/')
-                dispatch(getClients(start, limit))
+                history && history.push('/')
+                history && dispatch(getClients(start, limit))
             } else {
                 dispatch(actionFailed(UPDATE_CLIENT_FAIL))
             }
@@ -104,6 +123,25 @@ export const updateClient = (data, history, start, limit) => dispatch => {
             console.log('addClient err', err);
             dispatch(actionFailed(UPDATE_CLIENT_FAIL))
         })
+}
+
+export const deleteClient = (id, history, start, limit) => dispatch => {
+  dispatch(actionRequested(REMOVE_CLIENT_REQUEST))
+  axios
+    .delete(`${url}/persons/${id}${tokenString}`)
+    .then(res => {
+      if(res.data.success) {
+        dispatch(actionSucceed(REMOVE_CLIENT_SUCCESS, res.data.data))
+        history.push('/')
+        dispatch(getClients(start, limit))
+      } else {
+        dispatch(actionFailed(REMOVE_CLIENT_FAIL))
+      }
+    })
+    .catch(err => {
+      console.log('addClient err', err);
+      dispatch(actionFailed(REMOVE_CLIENT_FAIL))
+    })
 }
 
 export const openDetailsWindow = () => ({

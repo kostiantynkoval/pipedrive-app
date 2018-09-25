@@ -2,7 +2,7 @@ import React, { Component } from 'react'
 import {connect} from 'react-redux'
 import {compose} from 'redux'
 import PropTypes from 'prop-types'
-import {getClients} from '../../store/actions'
+import { getClients, searchClients, updateClient } from '../../store/actions'
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd'
 import ClientItem from '../client-item/ClientItem'
 import List from '@material-ui/core/List'
@@ -22,13 +22,6 @@ const styles = () => ({
     marginLeft: 5
   }
 });
-
-const reorder = (list, startIndex, endIndex) => {
-  const result = Array.from(list)
-  const [removed] = result.splice(startIndex, 1)
-  result.splice(endIndex, 0, removed)
-  return result
-};
 
 const getItemStyle = (isDragging, draggableStyle) => ({
   // some basic styles to make the items look a bit nicer
@@ -60,7 +53,7 @@ class ClientsList extends Component {
       return
     }
 
-    const items = reorder(
+    const items = this.reorder(
       this.state.items,
       result.source.index,
       result.destination.index
@@ -71,27 +64,80 @@ class ClientsList extends Component {
     })
   }
 
+  reorder = (list, startIndex, endIndex) => {
+    console.log(startIndex, endIndex)
+    const { history, updateClient, pagination: { start, limit } } = this.props
+    if (startIndex < endIndex) {
+      const firstItemNewPos = list[startIndex]['7876c07667bae0482c5d9bad11c0268688fbc544'] + endIndex - startIndex
+      updateClient({id: list[startIndex].id, '7876c07667bae0482c5d9bad11c0268688fbc544': firstItemNewPos}, null, start, limit)
+      let itemNewPos;
+      let modifiedHistory
+      for (let i = startIndex + 1; i <= endIndex; i++) {
+        itemNewPos = list[i]['7876c07667bae0482c5d9bad11c0268688fbc544'] - 1
+        modifiedHistory = i === endIndex ? history : null
+        // last argument is true - it disables reloading of the component
+        updateClient({id: list[i].id, '7876c07667bae0482c5d9bad11c0268688fbc544': itemNewPos}, modifiedHistory, start, limit)
+      }
+    } else if(startIndex > endIndex) {
+      const firstItemNewPos = list[startIndex]['7876c07667bae0482c5d9bad11c0268688fbc544'] + endIndex - startIndex
+      // last argument is true - it disables reloading of the component
+      updateClient({id: list[startIndex].id, '7876c07667bae0482c5d9bad11c0268688fbc544': firstItemNewPos}, null, start, limit)
+      let itemNewPos;
+      let modifiedHistory
+      for (let i = startIndex - 1; i >= endIndex; i--) {
+        itemNewPos = list[i]['7876c07667bae0482c5d9bad11c0268688fbc544'] + 1
+        modifiedHistory = i === endIndex ? history : null
+        updateClient({id: list[i].id, '7876c07667bae0482c5d9bad11c0268688fbc544': itemNewPos}, null, start, limit)
+      }
+    }
+
+
+    const result = Array.from(list)
+    const [removed] = result.splice(startIndex, 1)
+    result.splice(endIndex, 0, removed)
+    console.log(result)
+    return result
+  };
+
   handleChangePage = () => {}
 
   onPrevClicked = () => {
-      this.props.getClients(this.props.pagination.start - this.props.pagination.limit, this.props.pagination.limit)
-  }
-
-  onNextClicked = () => {
-      this.props.getClients(this.props.pagination.next_start, this.props.pagination.limit)
-  }
-
-  handleChangeRowsPerPage = event => {
-    console.log('event', event.target.value, this.state.rowsPerPage)
-    if(event.target.value !== this.state.rowsPerPage) {
-      this.props.getClients(0, event.target.value)
-      console.log('event', event.target.value, this.state)
+    const { searchTerm, searchClients, getClients, pagination: { start, limit } } = this.props
+    if(searchTerm) {
+      searchClients(searchTerm, start - limit, limit)
+    } else {
+      getClients(start - limit, limit)
     }
   }
 
+  onNextClicked = () => {
+    const { searchTerm, searchClients, getClients, pagination: { limit, next_start } } = this.props
+    if(searchTerm) {
+      searchClients(searchTerm, next_start, limit)
+    } else {
+      getClients(next_start, limit)
+    }
+
+  }
+
+  handleChangeRowsPerPage = event => {
+    const { searchTerm, searchClients, getClients, pagination: { start, limit } } = this.props
+    if(searchTerm) {
+      if(event.target.value !== limit) {
+        searchClients(searchTerm, start, event.target.value)
+      }
+    } else {
+      if(event.target.value !== limit) {
+        getClients(start, event.target.value)
+      }
+    }
+
+  }
+
   render() {
-    const { items, rowsPerPage } = this.state
-    const { pagination: { start, limit, more_items_in_collection, next_start }, classes } = this.props
+    const { items } = this.state
+    const { pagination: { start, limit, more_items_in_collection }, classes } = this.props
+
     return (
       <DragDropContext onDragEnd={this.onDragEnd} >
         <List>
@@ -120,12 +166,11 @@ class ClientsList extends Component {
         </Droppable>
           <TablePagination
             classes={classes}
-            //variant="caption"
             component="div"
             count={items.length}
-            rowsPerPage={items.length}
+            rowsPerPage={limit}
             page={0}
-            rowsPerPageOptions={[5,10,15,20]}
+            rowsPerPageOptions={[5,10,15,20,50]}
             backIconButtonProps={{
               disabled: start === 0,
               'aria-label': 'Previous Page',
@@ -150,25 +195,22 @@ ClientsList.propTypes = {
   classes: PropTypes.object.isRequired,
   pagination: PropTypes.object.isRequired,
   clients: PropTypes.array.isRequired,
+  searchTerm: PropTypes.string,
+  getClients: PropTypes.func.isRequired,
+  searchClients: PropTypes.func.isRequired
 }
 
 export default compose(
   withStyles(styles),
   connect(
     state => ({
-      pagination: state.clients.pagination
+      pagination: state.clients.pagination,
+      searchTerm: state.clients.searchTerm
     }),
     dispatch => ({
-      getClients: (start, limit) => dispatch(getClients(start, limit))
+      getClients: (start, limit) => dispatch(getClients(start, limit)),
+      searchClients: (term, start, limit) => dispatch(searchClients(term, start, limit)),
+      updateClient: (data, history, start, limit) => dispatch(updateClient(data, history, start, limit))
     })
   )
 )(ClientsList);
-
-connect(
-  state => ({
-      pagination: state.clients.pagination
-  }),
-  dispatch => ({
-    getClients: () => dispatch(getClients())
-  })
-)

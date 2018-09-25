@@ -137,6 +137,7 @@ class AddClient extends Component {
   }
 
   componentDidMount() {
+    console.log('componentDidMount')
     const { getOrganizations, match, selectedClient, history } = this.props
     console.log('update props', this.props)
     if(match.path === '/clients/:id/update') {
@@ -147,7 +148,7 @@ class AddClient extends Component {
           name: selectedClient.name || '',
           email: selectedClient.email[0].value || '',
           phone: selectedClient.phone[0].value || '',
-          org_id: selectedClient.org_id.value || ''
+          org_id: selectedClient.org_id ? selectedClient.org_id.value : ''
         })
       }
     }
@@ -192,7 +193,7 @@ class AddClient extends Component {
   }
 
   render() {
-    const { classes, selectedClient, isClientLoading, isDetailsActive, organizations, pagination } = this.props;
+    const { classes, selectedClient, isClientLoading, isDetailsActive, organizations, pagination, match } = this.props;
     console.log(pagination)
     return selectedClient !== null ? (
       <Modal
@@ -210,7 +211,7 @@ class AddClient extends Component {
                 <Times />
               </IconButton>
             }
-            title="Add New Person"
+            title={ match.path === '/clients/:id/update' ? 'Update Person' : 'Add New Person' }
           />
           <form onSubmit={this.handleSubmit} noValidate autoComplete="off">
           <CardContent className={classes.content}>
@@ -269,7 +270,7 @@ class AddClient extends Component {
           </CardContent>
           <CardActions className={classes.actions}>
             <Button type="submit" variant="outlined" className={classes.button}>
-              Add
+              { match.path === '/clients/:id/update' ? 'Update' : 'Add' }
             </Button>
           </CardActions>
           </form>
