@@ -181,7 +181,8 @@ class AddClient extends Component {
       name,
       email,
       org_id,
-      phone
+      phone,
+      ['7876c07667bae0482c5d9bad11c0268688fbc544']: Date.now()
     }
     if(match.path === '/clients/:id/update') {
       data.id = match.params.id

@@ -1,5 +1,6 @@
 import {
   GET_CLIENTS_REQUEST, GET_CLIENTS_SUCCESS, GET_CLIENTS_FAIL,
+  GET_CLIENTS_AFTER_REORDER_REQUEST,
   SEARCH_CLIENTS_REQUEST, SEARCH_CLIENTS_SUCCESS, SEARCH_CLIENTS_FAIL,
   CREATE_CLIENT_REQUEST, CREATE_CLIENT_SUCCESS, CREATE_CLIENT_FAIL,
   UPDATE_CLIENT_REQUEST, UPDATE_CLIENT_SUCCESS, UPDATE_CLIENT_FAIL,
@@ -29,6 +30,11 @@ const clientsReducer = (state = initialState, action) => {
       return {
         ...state,
         isLoading: true
+      }
+    case GET_CLIENTS_AFTER_REORDER_REQUEST:
+      return {
+        ...state,
+        isLoading: false
       }
     case GET_CLIENTS_SUCCESS:
       return {

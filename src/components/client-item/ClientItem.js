@@ -76,14 +76,15 @@ const ClientItem = (props) => {
           classes={{primary: props.classes.primary}}
         />
         <ListItemAvatar>
-          {
-            pictureId === null ?
-              <Avatar className={props.classes.avatar}>
-                { getAvatar(props) }
-              </Avatar> :
-              <Avatar className={props.classes.avatar}>OP</Avatar> // TODO find out how to fetch image by id
-          }
-
+          <Avatar
+            className={props.classes.avatar}>
+            {
+              pictureId === null ?
+                <span>{getAvatar(props)}</span>
+                :
+                <img width={'100%'} src={pictureId.pictures['128']} alt=""/>
+            }
+          </Avatar>
         </ListItemAvatar>
       </ListItem>
     </Link>

@@ -23,6 +23,7 @@ const styles = () => ({
   }
 });
 
+
 const getItemStyle = (isDragging, draggableStyle) => ({
   // some basic styles to make the items look a bit nicer
   marginBottom: '7px',
@@ -48,12 +49,14 @@ class ClientsList extends Component {
   }
 
   onDragEnd = (result) => {
-    // dropped outside the list
-    if (!result.destination) {
+    const { getClients, updateClient, pagination: { start, limit } } = this.props
+
+    // if dropped outside the list or item stayed on same position
+    if (!result.destination || result.source.index === result.destination.index) {
       return
     }
 
-    const items = this.reorder(
+    const items = this.reorderInProps(
       this.state.items,
       result.source.index,
       result.destination.index
@@ -62,42 +65,47 @@ class ClientsList extends Component {
     this.setState({
       items,
     })
-  }
 
-  reorder = (list, startIndex, endIndex) => {
-    console.log(startIndex, endIndex)
-    const { history, updateClient, pagination: { start, limit } } = this.props
-    if (startIndex < endIndex) {
-      const firstItemNewPos = list[startIndex]['7876c07667bae0482c5d9bad11c0268688fbc544'] + endIndex - startIndex
-      updateClient({id: list[startIndex].id, '7876c07667bae0482c5d9bad11c0268688fbc544': firstItemNewPos}, null, start, limit)
-      let itemNewPos;
-      let modifiedHistory
-      for (let i = startIndex + 1; i <= endIndex; i++) {
-        itemNewPos = list[i]['7876c07667bae0482c5d9bad11c0268688fbc544'] - 1
-        modifiedHistory = i === endIndex ? history : null
-        // last argument is true - it disables reloading of the component
-        updateClient({id: list[i].id, '7876c07667bae0482c5d9bad11c0268688fbc544': itemNewPos}, modifiedHistory, start, limit)
-      }
-    } else if(startIndex > endIndex) {
-      const firstItemNewPos = list[startIndex]['7876c07667bae0482c5d9bad11c0268688fbc544'] + endIndex - startIndex
-      // last argument is true - it disables reloading of the component
-      updateClient({id: list[startIndex].id, '7876c07667bae0482c5d9bad11c0268688fbc544': firstItemNewPos}, null, start, limit)
-      let itemNewPos;
-      let modifiedHistory
-      for (let i = startIndex - 1; i >= endIndex; i--) {
-        itemNewPos = list[i]['7876c07667bae0482c5d9bad11c0268688fbc544'] + 1
-        modifiedHistory = i === endIndex ? history : null
-        updateClient({id: list[i].id, '7876c07667bae0482c5d9bad11c0268688fbc544': itemNewPos}, null, start, limit)
-      }
+    let Promises = []
+    let startIndex, endIndex
+    if(result.source.index < result.destination.index) {
+      startIndex = result.source.index;
+      endIndex = result.destination.index;
+    } else {
+      startIndex = result.destination.index;
+      endIndex = result.source.index;
     }
 
+    for (let i = startIndex; i <= endIndex; i++) {
+      Promises[i] =  updateClient({id: items[i].id, '7876c07667bae0482c5d9bad11c0268688fbc544': items[i]['7876c07667bae0482c5d9bad11c0268688fbc544']}, null, null, null)
+    }
+
+    Promise.all(Promises).then(() => getClients(start, limit, true))
+  }
+
+  reorderInProps = (list, startIndex, endIndex) => {
+    console.log(startIndex, endIndex)
+    const { pagination: { start, limit } } = this.props
+    if (startIndex < endIndex) {
+
+      list[startIndex]['7876c07667bae0482c5d9bad11c0268688fbc544'] = start + endIndex - startIndex
+      for (let i = startIndex + 1; i <= endIndex; i++) {
+        list[i]['7876c07667bae0482c5d9bad11c0268688fbc544'] = start + i - 1
+      }
+    } else if(startIndex > endIndex) {
+
+      list[startIndex]['7876c07667bae0482c5d9bad11c0268688fbc544'] = start + limit + endIndex - startIndex -1
+      for (let i = startIndex - 1; i >= endIndex; i--) {
+        list[i]['7876c07667bae0482c5d9bad11c0268688fbc544'] = start + i + 1
+      }
+    }
 
     const result = Array.from(list)
     const [removed] = result.splice(startIndex, 1)
     result.splice(endIndex, 0, removed)
-    console.log(result)
     return result
-  };
+
+  }
 
   handleChangePage = () => {}
 
@@ -135,6 +143,7 @@ class ClientsList extends Component {
   }
 
   render() {
+    console.log('rerender', this.state.items)
     const { items } = this.state
     const { pagination: { start, limit, more_items_in_collection }, classes } = this.props
 
@@ -142,32 +151,32 @@ class ClientsList extends Component {
       <DragDropContext onDragEnd={this.onDragEnd} >
         <List>
         <Droppable droppableId="droppable">
-            { (provided, snapshot) => (
-            <div ref={provided.innerRef}
-                 style={getListStyle(snapshot.isDraggingOver)}>
-            {
-              items.map( (client, index) =>
-                <Draggable key={client.id} draggableId={client.id} index={index}>
-                  { (provided, snapshot) => (
-                    <div ref={provided.innerRef}
-                         {...provided.draggableProps}
-                         {...provided.dragHandleProps}
-                         style={getItemStyle(
-                             snapshot.isDragging,
-                             provided.draggableProps.style
-                         )} >
-                      <ClientItem {...client}/>
-                    </div>
-                  ) }
-                </Draggable> )
-            }
-            </div>
-            ) }
+          { (provided, snapshot) => (
+          <div ref={provided.innerRef}
+               style={getListStyle(snapshot.isDraggingOver)}>
+          {
+            items.map( (client, index) =>
+              <Draggable key={client.id} draggableId={client.id} index={index}>
+                { (provided, snapshot) => (
+                  <div ref={provided.innerRef}
+                       {...provided.draggableProps}
+                       {...provided.dragHandleProps}
+                       style={getItemStyle(
+                           snapshot.isDragging,
+                           provided.draggableProps.style
+                       )} >
+                    <ClientItem {...client}/>
+                  </div>
+                ) }
+              </Draggable> )
+          }
+          </div>
+          ) }
         </Droppable>
           <TablePagination
             classes={classes}
             component="div"
-            count={items.length}
+            count={2}
             rowsPerPage={limit}
             page={0}
             rowsPerPageOptions={[5,10,15,20,50]}
@@ -208,7 +217,7 @@ export default compose(
       searchTerm: state.clients.searchTerm
     }),
     dispatch => ({
-      getClients: (start, limit) => dispatch(getClients(start, limit)),
+      getClients: (start, limit, isReorder = null) => dispatch(getClients(start, limit, isReorder)),
       searchClients: (term, start, limit) => dispatch(searchClients(term, start, limit)),
       updateClient: (data, history, start, limit) => dispatch(updateClient(data, history, start, limit))
     })

@@ -1,13 +1,15 @@
 import axios from 'axios'
 import {
   GET_CLIENTS_REQUEST, GET_CLIENTS_SUCCESS, GET_CLIENTS_FAIL,
+  GET_CLIENTS_AFTER_REORDER_SUCCESS,
   SEARCH_CLIENTS_REQUEST, SEARCH_CLIENTS_SUCCESS, SEARCH_CLIENTS_FAIL,
   CREATE_CLIENT_REQUEST, CREATE_CLIENT_SUCCESS, CREATE_CLIENT_FAIL,
   UPDATE_CLIENT_REQUEST, UPDATE_CLIENT_SUCCESS, UPDATE_CLIENT_FAIL,
+  UPDATE_CLIENT_PICTURE_REQUEST, UPDATE_CLIENT_PICTURE_SUCCESS, UPDATE_CLIENT_PICTURE_FAIL,
   REMOVE_CLIENT_REQUEST, REMOVE_CLIENT_SUCCESS, REMOVE_CLIENT_FAIL,
   GET_CLIENT_DETAILS_REQUEST, GET_CLIENT_DETAILS_SUCCESS, GET_CLIENT_DETAILS_FAIL,
   GET_ORGANIZATIONS_REQUEST, GET_ORGANIZATIONS_SUCCESS, GET_ORGANIZATIONS_FAIL,
-  CLOSE_DETAILS_WINDOW, OPEN_DETAILS_WINDOW
+  CLOSE_DETAILS_WINDOW, OPEN_DETAILS_WINDOW, GET_CLIENTS_AFTER_REORDER_REQUEST
 } from './actionTypes'
 
 const url = process.env.REACT_APP_API_URL
@@ -15,9 +17,9 @@ const tokenString = `?api_token=${process.env.REACT_APP_API_TOKEN}`
 
 // Action Creators
 
-export const getClients = (start, limit) => dispatch => {
-  dispatch(actionRequested(GET_CLIENTS_REQUEST))
-  axios
+export const getClients = (start, limit, isReorder = false) => dispatch => {
+  isReorder ? dispatch(actionSucceed(GET_CLIENTS_AFTER_REORDER_REQUEST)) : dispatch(actionRequested(GET_CLIENTS_REQUEST))
+  return axios
     .get(`${url}/persons${tokenString}&start=${start}&limit=${limit}&sort=7876c07667bae0482c5d9bad11c0268688fbc544`)
     .then(res => {
       if(res.data.success) {
@@ -108,7 +110,7 @@ export const addClient = (data, history, start, limit) => dispatch => {
 
 export const updateClient = (data, history, start, limit) => dispatch => {
     dispatch(actionRequested(UPDATE_CLIENT_REQUEST))
-    axios
+    return axios
         .put(`${url}/persons/${data.id}${tokenString}`, data)
         .then(res => {
             if(res.data.success) {
@@ -123,6 +125,24 @@ export const updateClient = (data, history, start, limit) => dispatch => {
             console.log('addClient err', err);
             dispatch(actionFailed(UPDATE_CLIENT_FAIL))
         })
+}
+
+export const updateClientPicture = (id, data) => dispatch => {
+  dispatch(actionRequested(UPDATE_CLIENT_PICTURE_REQUEST))
+  axios
+    .post(`${url}/persons/${id}/picture${tokenString}`, data, {'Content-Type': 'multipart/form-data'})
+    .then(res => {
+      if(res.data.success) {
+        dispatch(actionSucceed(UPDATE_CLIENT_PICTURE_SUCCESS, res.data.data))
+        dispatch(getClientDetails(data.id))
+      } else {
+        dispatch(actionFailed(UPDATE_CLIENT_PICTURE_FAIL))
+      }
+    })
+    .catch(err => {
+      console.log('addClient err', err);
+      dispatch(actionFailed(UPDATE_CLIENT_PICTURE_FAIL))
+    })
 }
 
 export const deleteClient = (id, history, start, limit) => dispatch => {

@@ -3,7 +3,7 @@ import PropTypes from 'prop-types'
 import {Link} from 'react-router-dom'
 import {connect} from 'react-redux'
 import {compose} from 'redux'
-import {getClientDetails, openDetailsWindow, closeDetailsWindow, deleteClient} from '../../store/actions'
+import {getClientDetails, openDetailsWindow, closeDetailsWindow, deleteClient, updateClientPicture} from '../../store/actions'
 import {withStyles} from '@material-ui/core/styles'
 import Modal from '@material-ui/core/Modal'
 import Button from '@material-ui/core/Button'
@@ -65,7 +65,31 @@ const styles = theme => ({
     height: 60,
     fontFamily: 'Open Sans, sans-serif',
     color: '#0098ED',
-    textTransform: 'uppercase'
+    textTransform: 'uppercase',
+    position: 'relative',
+  },
+  label: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    width: '100%',
+    height: '100%',
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'flex-end',
+    opacity: 0,
+    background: 'rgba(0,0,0,0.8)',
+    cursor: 'pointer',
+    transition: 'opacity .3s ease',
+    '&:hover': {
+      opacity: 1
+    }
+  },
+  labelText: {
+    color: 'white',
+    textTransform: 'none',
+    fontSize: '0.65rem',
+    marginBottom: 7
   },
   userName: {
     fontSize: '0.775rem',
@@ -121,12 +145,31 @@ const styles = theme => ({
 
 class ClientDetails extends Component {
 
-  state = {
-    isConfirmOpen: false
+  constructor(props) {
+    super(props)
+    this.state = {
+      isConfirmOpen: false
+    }
   }
 
   componentDidMount() {
     this.props.getClientDetails(this.props.match.params.id)
+  }
+
+  onChange = (e) => {
+    e.persist()
+    console.log(e)
+    const file = new FormData()
+    file.append('file', e.target.files[0])
+    const data = {
+      file: {}
+    }
+    this.props.updateClientPicture(this.props.match.params.id, file)
+  }
+
+  onSubmit = (e) => {
+    e.preventDefault()
+    console.log(e)
   }
 
   // getSnapshotBeforeUpdate(prevProps) {
@@ -194,15 +237,22 @@ class ClientDetails extends Component {
                 selectedClient && (
                   <CardContent className={classes.content}>
                     <div className={classes.main}>
-                      {
-                        selectedClient.picture_id === null ?
-                          <Avatar
-                            className={classes.avatar}>
-                            {selectedClient.first_name ? selectedClient.first_name.charAt(0) : ''}
-                            {selectedClient.last_name ? selectedClient.last_name.charAt(0) : ''}
-                          </Avatar> :
-                          <Avatar className={classes.avatar}>!!</Avatar>
-                      }
+                      <Avatar
+                        className={classes.avatar}>
+                        <input onChange={this.onChange} style={{display: 'none'}} id="picUpd" type="file" encType="multitype"/>
+                        <label htmlFor="picUpd" className={classes.label}>
+                          <span className={classes.labelText}>update</span>
+                        </label>
+                        {
+                          selectedClient.picture_id === null ?
+                            <span>
+                              {selectedClient.first_name ? selectedClient.first_name.charAt(0) : ''}
+                              {selectedClient.last_name ? selectedClient.last_name.charAt(0) : ''}
+                            </span>
+                          :
+                            <img width={'100%'} src={selectedClient.picture_id.pictures['128']} alt=""/>
+                        }
+                      </Avatar>
                       <div className={classes.userName}>{selectedClient.name}</div>
                       <div className={classes.phone}>{selectedClient.phone[0].value}</div>
                     </div>
@@ -278,7 +328,8 @@ export default compose(
       getClientDetails: id => dispatch(getClientDetails(id)),
       deleteClient: (id, history, start, limit) => dispatch(deleteClient(id, history, start, limit)),
       openDetailsWindow: () => dispatch(openDetailsWindow()),
-      closeDetailsWindow: () => dispatch(closeDetailsWindow())
+      closeDetailsWindow: () => dispatch(closeDetailsWindow()),
+      updateClientPicture: (id, data) => dispatch(updateClientPicture(id, data))
     })
   )
 )(ClientDetails)
