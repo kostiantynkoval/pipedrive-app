@@ -39,8 +39,8 @@ class Dashboard extends Component {
   }
 
   onSearchClients = (term) => {
+    // Handling searching: if empty string - getting all clients, if filled - sending request with search data
     const { getClients, searchClients, pagination: { start, limit } } = this.props
-    console.log('onSearchClients', this.props, term)
     if(term === '') {
       getClients(start, limit)
     } else {
@@ -60,9 +60,7 @@ class Dashboard extends Component {
               New Client
             </Button>
           </Link>
-
         </div>
-
         <div className={classes.wrapper}>
           {
             isLoading ? <Loader/> : <ClientsList clients={clientsList}/>
@@ -84,6 +82,8 @@ Dashboard.propTypes = {
   clientsList: PropTypes.array.isRequired,
   isLoading: PropTypes.bool.isRequired,
   pagination: PropTypes.object.isRequired,
+  getClients: PropTypes.func.isRequired,
+  searchClients: PropTypes.func.isRequired,
 }
 
 export default compose(

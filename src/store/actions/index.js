@@ -1,15 +1,15 @@
 import axios from 'axios'
 import {
   GET_CLIENTS_REQUEST, GET_CLIENTS_SUCCESS, GET_CLIENTS_FAIL,
-  GET_CLIENTS_AFTER_REORDER_SUCCESS,
+  GET_CLIENTS_AFTER_REORDER_REQUEST,
   SEARCH_CLIENTS_REQUEST, SEARCH_CLIENTS_SUCCESS, SEARCH_CLIENTS_FAIL,
   CREATE_CLIENT_REQUEST, CREATE_CLIENT_SUCCESS, CREATE_CLIENT_FAIL,
   UPDATE_CLIENT_REQUEST, UPDATE_CLIENT_SUCCESS, UPDATE_CLIENT_FAIL,
   UPDATE_CLIENT_PICTURE_REQUEST, UPDATE_CLIENT_PICTURE_SUCCESS, UPDATE_CLIENT_PICTURE_FAIL,
   REMOVE_CLIENT_REQUEST, REMOVE_CLIENT_SUCCESS, REMOVE_CLIENT_FAIL,
-  GET_CLIENT_DETAILS_REQUEST, GET_CLIENT_DETAILS_SUCCESS, GET_CLIENT_DETAILS_FAIL,
+  GET_CLIENT_DETAILS_REQUEST, GET_CLIENT_DETAILS_SILENT_REQUEST, GET_CLIENT_DETAILS_SUCCESS, GET_CLIENT_DETAILS_FAIL,
   GET_ORGANIZATIONS_REQUEST, GET_ORGANIZATIONS_SUCCESS, GET_ORGANIZATIONS_FAIL,
-  CLOSE_DETAILS_WINDOW, OPEN_DETAILS_WINDOW, GET_CLIENTS_AFTER_REORDER_REQUEST
+  CLOSE_DETAILS_WINDOW, OPEN_DETAILS_WINDOW
 } from './actionTypes'
 
 const url = process.env.REACT_APP_API_URL
@@ -51,9 +51,9 @@ export const searchClients = (term, start, limit) => dispatch => {
     })
 }
 
-export const getClientDetails = id => dispatch => {
+export const getClientDetails = (id, silent = false) => dispatch => {
 
-  dispatch(actionRequested(GET_CLIENT_DETAILS_REQUEST))
+  silent ? dispatch(actionRequested(GET_CLIENT_DETAILS_SILENT_REQUEST)) : dispatch(actionRequested(GET_CLIENT_DETAILS_REQUEST))
   axios
     .get(`${url}/persons/${id}${tokenString}`)
     .then(res => {
@@ -130,11 +130,11 @@ export const updateClient = (data, history, start, limit) => dispatch => {
 export const updateClientPicture = (id, data) => dispatch => {
   dispatch(actionRequested(UPDATE_CLIENT_PICTURE_REQUEST))
   axios
-    .post(`${url}/persons/${id}/picture${tokenString}`, data, {'Content-Type': 'multipart/form-data'})
+    .post(`${url}/persons/${id}/picture${tokenString}`, data)
     .then(res => {
       if(res.data.success) {
         dispatch(actionSucceed(UPDATE_CLIENT_PICTURE_SUCCESS, res.data.data))
-        dispatch(getClientDetails(data.id))
+        dispatch(getClientDetails(id, true))
       } else {
         dispatch(actionFailed(UPDATE_CLIENT_PICTURE_FAIL))
       }

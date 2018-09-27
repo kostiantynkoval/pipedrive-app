@@ -19,7 +19,6 @@ import CardActions from '@material-ui/core/CardActions';
 import CardContent from '@material-ui/core/CardContent';
 import IconButton from '@material-ui/core/IconButton';
 import TextField from '@material-ui/core/TextField';
-import Avatar from '@material-ui/core/Avatar';
 import MenuItem from '@material-ui/core/MenuItem';
 import FormControl from '@material-ui/core/FormControl';
 import FormHelperText from '@material-ui/core/FormHelperText';
@@ -64,54 +63,6 @@ const styles = theme => ({
     display: 'flex',
     flexDirection: 'column',
   },
-  main: {
-    margin: '10px 0',
-    display: 'flex',
-    flexFlow: 'column nowrap',
-    alignItems: 'center'
-  },
-  avatar: {
-    margin: 10,
-    width: 60,
-    height: 60,
-    fontFamily: 'Open Sans, sans-serif',
-    color: '#0098ED',
-  },
-  userName: {
-    fontSize: '0.775rem',
-    fontWeight: 'bold',
-    marginTop: 4,
-    marginBottom: 4
-  },
-  phone: {
-    fontSize: '0.775rem',
-    color: 'green',
-    marginBottom: 15
-  },
-  table: {
-    borderTop: '1px solid rgba(227,227,227, 0.7)',
-    padding: '10px 15px'
-  },
-  row: {
-    display: 'flex',
-    alignItems: 'center',
-    padding: '7px 0'
-  },
-  rowName: {
-    borderBottom: 'none',
-    flex: 3,
-    textAlign: 'right',
-    paddingRight: '8px',
-    fontSize: '0.775rem'
-  },
-  rowData: {
-    borderBottom: 'none',
-    flex: 7,
-    textAlign: 'left',
-    paddingLeft: '8px',
-    fontSize: '0.775rem',
-    color: '#666'
-  },
   actions: {
     background: 'rgb(237,237,238)',
     borderTop: '1px solid rgba(227,227,227, 0.9)',
@@ -137,9 +88,9 @@ class AddClient extends Component {
   }
 
   componentDidMount() {
-    console.log('componentDidMount')
     const { getOrganizations, match, selectedClient, history } = this.props
-    console.log('update props', this.props)
+
+    // if active route - update and no selected client in store - redirect to '/' or fill state with client data
     if(match.path === '/clients/:id/update') {
       if(!selectedClient) {
         history.push('/')
@@ -152,6 +103,7 @@ class AddClient extends Component {
         })
       }
     }
+    // get full organizations list to use in form as select options
     getOrganizations()
   }
 
@@ -170,7 +122,7 @@ class AddClient extends Component {
   }
 
   handleSubmit = event => {
-    const { pagination, updateClient, addClient, match, history} = this.props;
+    const { pagination, updateClient, addClient, match } = this.props;
     const { name, email, org_id, phone} = this.state;
     event.preventDefault()
     if(name === '') {
@@ -182,8 +134,10 @@ class AddClient extends Component {
       email,
       org_id,
       phone,
-      ['7876c07667bae0482c5d9bad11c0268688fbc544']: Date.now()
+      // client's odrer index: timestamp on client creation
+      ['7876c07667bae0482c5d9bad11c0268688fbc544']: Date.now() // eslint-disable-line no-useless-computed-key
     }
+    // adding client action or updating exist client
     if(match.path === '/clients/:id/update') {
       data.id = match.params.id
       updateClient(data, this.props.history, pagination.start, pagination.limit)
@@ -194,9 +148,8 @@ class AddClient extends Component {
   }
 
   render() {
-    const { classes, selectedClient, isClientLoading, isDetailsActive, organizations, pagination, match } = this.props;
-    console.log(pagination)
-    return selectedClient !== null ? (
+    const { classes, isDetailsActive, organizations, match } = this.props;
+    return (
       <Modal
         aria-labelledby="simple-modal-title"
         aria-describedby="simple-modal-description"
@@ -277,7 +230,7 @@ class AddClient extends Component {
           </form>
         </Card>
       </Modal>
-    ) : null
+    )
   }
 }
 
@@ -295,7 +248,13 @@ AddClient.propTypes = {
   isClientLoading: PropTypes.bool.isRequired,
   organizations: PropTypes.array,
   selectedClient: PropTypes.object,
-  pagination: PropTypes.object.isRequired
+  pagination: PropTypes.object.isRequired,
+  getOrganizations: PropTypes.func.isRequired,
+  addClient: PropTypes.func.isRequired,
+  updateClient: PropTypes.func.isRequired,
+  getClientDetails: PropTypes.func.isRequired,
+  openDetailsWindow: PropTypes.func.isRequired,
+  closeDetailsWindow: PropTypes.func.isRequired
 };
 
 export default compose(

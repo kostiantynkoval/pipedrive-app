@@ -46,43 +46,52 @@ const Secondary = ({children, classProps, spanStyles}) => (
   </span>
 )
 
-const getAvatar = (props) => {
-  if(props.first_name && props.last_name) {
-    return `${props.first_name.charAt(0)}${props.last_name.charAt(0)}`
-  } else if(props.name) {
-    const name = props.name.split(' ')
-    if(name.length > 1) {
-      return `${name[0].charAt(0)}${name[name.length -1 ].charAt(0)}`
+const getAvatar = (first_name, last_name, name) => {
+  if(first_name && last_name) {
+    return `${first_name.charAt(0)}${last_name.charAt(0)}`
+  } else if(name) {
+    const nameArr = name.split(' ')
+    if(nameArr.length > 1) {
+      return `${nameArr[0].charAt(0)}${nameArr[nameArr.length -1 ].charAt(0)}`
     } else {
-      return `${name[0].charAt(0)}`
+      return `${nameArr[0].charAt(0)}`
     }
   } else {
     return '??'
   }
-
 }
 
-const ClientItem = (props) => {
-  const orgObjName = props.org_id ? props.org_id.name : ''
-  const orgName = props.org_name ? props.org_name : ''
+const getPicture = (picture_id, picture) => {
+  if (picture_id) {
+    return picture_id.pictures['128']
+  } else if(picture) {
+    return picture.url
+  } else {
+    return null
+  }
+}
+
+const ClientItem = ({id, name, org_id, org_name, picture_id, picture, classes, first_name, last_name}) => {
+  const orgObjName = org_id ? org_id.name : ''
+  const orgName = org_name ? org_name : ''
   const org = orgObjName || orgName;
-  const pictureId = props.picture_id || props.picture || null
+  const pictureUrl = getPicture(picture_id, picture)
   return (
-    <Link className={props.classes.link} to={`/clients/${props.id}`}>
-      <ListItem button className={props.classes.item}>
+    <Link className={classes.link} to={`/clients/${id}`}>
+      <ListItem button className={classes.item}>
         <ListItemText
-          primary={props.name}
-          secondary={<Secondary spanStyles={props.classes.spanStyles} classProps={props.classes.secondary}>{org}</Secondary>}
-          classes={{primary: props.classes.primary}}
+          primary={name}
+          secondary={<Secondary spanStyles={classes.spanStyles} classProps={classes.secondary}>{org}</Secondary>}
+          classes={{primary: classes.primary}}
         />
         <ListItemAvatar>
           <Avatar
-            className={props.classes.avatar}>
+            className={classes.avatar}>
             {
-              pictureId === null ?
-                <span>{getAvatar(props)}</span>
+              pictureUrl === null ?
+                <span>{getAvatar(first_name, last_name, name)}</span>
                 :
-                <img width={'100%'} src={pictureId.pictures['128']} alt=""/>
+                <img width={'100%'} src={pictureUrl} alt=""/>
             }
           </Avatar>
         </ListItemAvatar>

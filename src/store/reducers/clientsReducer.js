@@ -4,8 +4,9 @@ import {
   SEARCH_CLIENTS_REQUEST, SEARCH_CLIENTS_SUCCESS, SEARCH_CLIENTS_FAIL,
   CREATE_CLIENT_REQUEST, CREATE_CLIENT_SUCCESS, CREATE_CLIENT_FAIL,
   UPDATE_CLIENT_REQUEST, UPDATE_CLIENT_SUCCESS, UPDATE_CLIENT_FAIL,
+  UPDATE_CLIENT_PICTURE_REQUEST, UPDATE_CLIENT_PICTURE_SUCCESS, UPDATE_CLIENT_PICTURE_FAIL,
   REMOVE_CLIENT_REQUEST, REMOVE_CLIENT_SUCCESS, REMOVE_CLIENT_FAIL,
-  GET_CLIENT_DETAILS_REQUEST, GET_CLIENT_DETAILS_SUCCESS, GET_CLIENT_DETAILS_FAIL,
+  GET_CLIENT_DETAILS_REQUEST, GET_CLIENT_DETAILS_SILENT_REQUEST, GET_CLIENT_DETAILS_SUCCESS, GET_CLIENT_DETAILS_FAIL,
   GET_ORGANIZATIONS_REQUEST, GET_ORGANIZATIONS_SUCCESS, GET_ORGANIZATIONS_FAIL,
   OPEN_DETAILS_WINDOW, CLOSE_DETAILS_WINDOW
 } from '../actions/actionTypes'
@@ -16,6 +17,7 @@ const initialState = {
   selectedClient: null,
   isLoading: false,
   isClientLoading: false,
+  isClientImgLoading: false,
   isDetailsActive: false,
   pagination: {
     limit: 10,
@@ -97,6 +99,21 @@ const clientsReducer = (state = initialState, action) => {
           ...state,
           isClientLoading: false
       }
+    case UPDATE_CLIENT_PICTURE_REQUEST:
+      return {
+        ...state,
+        isClientImgLoading: true
+      }
+    case UPDATE_CLIENT_PICTURE_SUCCESS:
+      return {
+        ...state,
+        isClientImgLoading: false,
+      }
+    case UPDATE_CLIENT_PICTURE_FAIL:
+      return {
+        ...state,
+        isClientImgLoading: false
+      }
     case REMOVE_CLIENT_REQUEST:
       return {
         ...state,
@@ -129,6 +146,11 @@ const clientsReducer = (state = initialState, action) => {
       return {
         ...state,
         isClientLoading: true,
+      }
+    case GET_CLIENT_DETAILS_SILENT_REQUEST:
+      return {
+        ...state,
+        isClientLoading: false,
       }
     case GET_CLIENT_DETAILS_SUCCESS:
       return {

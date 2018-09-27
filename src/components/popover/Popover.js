@@ -25,27 +25,27 @@ const styles = {
   }
 }
 
-const Popover = (props) => {
+const Popover = ({isOpen, classes, handleClickDisagreeButton, handleClickAgreeButton}) => {
   return (
       <Modal
         aria-labelledby="inner-modal-title"
         aria-describedby="inner-modal-description"
-        open={props.isOpen}
-        onClose={props.handleClickDisgreeButton}
-        classes={{root: props.classes.container}}
+        open={isOpen}
+        onClose={handleClickDisagreeButton}
+        classes={{root: classes.container}}
       >
-        <Paper className={props.classes.root}>
-          <DialogTitle>Are you sure</DialogTitle>
+        <Paper className={classes.root}>
+          <DialogTitle>Confirm delete</DialogTitle>
           <DialogContent>
             <DialogContentText>
-              Confirm delete
+              You are about to delete an item. Are you sure?
             </DialogContentText>
           </DialogContent>
           <DialogActions>
-            <Button onClick={props.handleClickDisagreeButton} color="primary">
+            <Button onClick={handleClickDisagreeButton} color="primary">
               Disagree
             </Button>
-            <Button onClick={props.handleClickAgreeButton} color="secondary">
+            <Button onClick={handleClickAgreeButton} color="secondary">
               Agree
             </Button>
           </DialogActions>

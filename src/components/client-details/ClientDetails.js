@@ -91,6 +91,10 @@ const styles = theme => ({
     fontSize: '0.65rem',
     marginBottom: 7
   },
+  imgError: {
+    fontSize: '0.65rem',
+    color: 'darkred',
+  },
   userName: {
     fontSize: '0.775rem',
     fontWeight: 'bold',
@@ -148,46 +152,35 @@ class ClientDetails extends Component {
   constructor(props) {
     super(props)
     this.state = {
-      isConfirmOpen: false
+      isConfirmOpen: false,
+      imgError: ''
     }
   }
 
   componentDidMount() {
-    this.props.getClientDetails(this.props.match.params.id)
+    const {match: {params: {id}}, getClientDetails } = this.props;
+    getClientDetails(id)
   }
 
+  // triggering updating picture action on file added, also checking file types "jpg, jpeg, png"
   onChange = (e) => {
-    e.persist()
-    console.log(e)
+    const {match: {params: {id}}, updateClientPicture } = this.props;
+    this.setState({imgError: ''})
     const file = new FormData()
     file.append('file', e.target.files[0])
-    const data = {
-      file: {}
+    console.log(e.target.files[0])
+    if(e.target.files[0].type === 'image/jpg' || e.target.files[0].type === 'image/jpeg' || e.target.files[0].type === 'image/png') {
+      updateClientPicture(id, file)
+    } else {
+      this.setState({imgError: 'Wrong file type'})
     }
-    this.props.updateClientPicture(this.props.match.params.id, file)
-  }
 
-  onSubmit = (e) => {
-    e.preventDefault()
-    console.log(e)
   }
-
-  // getSnapshotBeforeUpdate(prevProps) {
-  //   if (prevProps.match.params.id !== this.props.match.params.id) {
-  //     return this.props.match.params.id
-  //   }
-  //   return null
-  // }
-  //
-  // componentDidUpdate(p, s, snapshot) {
-  //   if (snapshot) {
-  //     this.props.getClientDetails(snapshot)
-  //   }
-  // }
 
   handleClose = () => {
-    this.props.closeDetailsWindow()
-    this.props.history.push('/')
+    const {history: {push}, closeDetailsWindow } = this.props;
+    closeDetailsWindow()
+    push('/')
   };
 
   confirmDelete = () => {
@@ -195,9 +188,8 @@ class ClientDetails extends Component {
   }
 
   deleteItem = () => {
-    const {match: {params}, history, deleteClient, pagination: { start, limit } } = this.props;
-    console.log(this.props)
-    deleteClient(params.id, history, start, limit)
+    const {match: {params: {id}}, history, deleteClient, pagination: { start, limit } } = this.props;
+    deleteClient(id, history, start, limit)
   }
 
   closeWindow = () => {
@@ -205,12 +197,13 @@ class ClientDetails extends Component {
   }
 
   render() {
-    const {classes, selectedClient, isClientLoading, match, isDetailsActive} = this.props;
+    const {classes, selectedClient, isClientLoading, isClientImgLoading, match, isDetailsActive} = this.props;
     if (isClientLoading) {
       return <Loader/>
     } else {
       return (
         <Modal
+          disableAutoFocus={true}
           aria-labelledby="simple-modal-title"
           aria-describedby="simple-modal-description"
           open={isDetailsActive}
@@ -237,9 +230,11 @@ class ClientDetails extends Component {
                 selectedClient && (
                   <CardContent className={classes.content}>
                     <div className={classes.main}>
+                      { this.state.imgError !== '' && <div className={classes.imgError}>{this.state.imgError}</div> }
                       <Avatar
                         className={classes.avatar}>
-                        <input onChange={this.onChange} style={{display: 'none'}} id="picUpd" type="file" encType="multitype"/>
+                        { isClientImgLoading && <div style={{ position: 'absolute', top: 0, left: 0, width: 60, height: 60, background: 'rgba(0,0,0,0.8)'}} /> }
+                        <input onChange={this.onChange} style={{display: 'none'}} id="picUpd" type="file"/>
                         <label htmlFor="picUpd" className={classes.label}>
                           <span className={classes.labelText}>update</span>
                         </label>
@@ -309,6 +304,7 @@ const mapStateToProps = state => ({
   selectedClient: state.clients.selectedClient,
   isDetailsActive: state.clients.isDetailsActive,
   isClientLoading: state.clients.isClientLoading,
+  isClientImgLoading: state.clients.isClientImgLoading,
   pagination: state.clients.pagination
 })
 
@@ -318,6 +314,12 @@ ClientDetails.propTypes = {
   pagination: PropTypes.object.isRequired,
   isDetailsActive: PropTypes.bool.isRequired,
   isClientLoading: PropTypes.bool.isRequired,
+  isClientImgLoading: PropTypes.bool.isRequired,
+  getClientDetails: PropTypes.func.isRequired,
+  deleteClient: PropTypes.func.isRequired,
+  openDetailsWindow: PropTypes.func.isRequired,
+  closeDetailsWindow: PropTypes.func.isRequired,
+  updateClientPicture: PropTypes.func.isRequired
 }
 
 export default compose(

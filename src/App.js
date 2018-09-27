@@ -9,9 +9,7 @@ function App() {
     <Router>
       <Fragment>
         <Route path="/" component={Dashboard}/>
-        {/*<Route exact path="/clients/add" component={AddClient}/>*/}
         <Route exact path="/clients/:id" render={props => {
-          console.log(props)
           if(props.match.params.id === 'add') {
             return <AddClient {...props}/>
           } else {

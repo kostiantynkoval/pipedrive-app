@@ -56,7 +56,7 @@ class ClientsList extends Component {
       return
     }
 
-    const items = this.reorderInProps(
+    const items = this.reorder(
       this.state.items,
       result.source.index,
       result.destination.index
@@ -66,8 +66,10 @@ class ClientsList extends Component {
       items,
     })
 
+    // updating order property in each of items have been dragged and after all updatings are done we get new items list
     let Promises = []
     let startIndex, endIndex
+
     if(result.source.index < result.destination.index) {
       startIndex = result.source.index;
       endIndex = result.destination.index;
@@ -83,23 +85,24 @@ class ClientsList extends Component {
     Promise.all(Promises).then(() => getClients(start, limit, true))
   }
 
-  reorderInProps = (list, startIndex, endIndex) => {
+  reorder = (list, startIndex, endIndex) => {
     console.log(startIndex, endIndex)
     const { pagination: { start, limit } } = this.props
-    if (startIndex < endIndex) {
 
+    // Getting new position indexes and replacing them in item's properties
+    if (startIndex < endIndex) {
       list[startIndex]['7876c07667bae0482c5d9bad11c0268688fbc544'] = start + endIndex - startIndex
       for (let i = startIndex + 1; i <= endIndex; i++) {
         list[i]['7876c07667bae0482c5d9bad11c0268688fbc544'] = start + i - 1
       }
     } else if(startIndex > endIndex) {
-
       list[startIndex]['7876c07667bae0482c5d9bad11c0268688fbc544'] = start + limit + endIndex - startIndex -1
       for (let i = startIndex - 1; i >= endIndex; i--) {
         list[i]['7876c07667bae0482c5d9bad11c0268688fbc544'] = start + i + 1
       }
     }
 
+    // Changing positions of item in the array
     const result = Array.from(list)
     const [removed] = result.splice(startIndex, 1)
     result.splice(endIndex, 0, removed)
@@ -107,8 +110,10 @@ class ClientsList extends Component {
 
   }
 
+  // mock func: marked as required in material, but we do not use it
   handleChangePage = () => {}
 
+  // Previous page button clicked
   onPrevClicked = () => {
     const { searchTerm, searchClients, getClients, pagination: { start, limit } } = this.props
     if(searchTerm) {
@@ -118,6 +123,7 @@ class ClientsList extends Component {
     }
   }
 
+  // Next page button clicked
   onNextClicked = () => {
     const { searchTerm, searchClients, getClients, pagination: { limit, next_start } } = this.props
     if(searchTerm) {
@@ -125,9 +131,9 @@ class ClientsList extends Component {
     } else {
       getClients(next_start, limit)
     }
-
   }
 
+  // Quantity of rows displayed on the page has been changed
   handleChangeRowsPerPage = event => {
     const { searchTerm, searchClients, getClients, pagination: { start, limit } } = this.props
     if(searchTerm) {
@@ -143,7 +149,6 @@ class ClientsList extends Component {
   }
 
   render() {
-    console.log('rerender', this.state.items)
     const { items } = this.state
     const { pagination: { start, limit, more_items_in_collection }, classes } = this.props
 
@@ -206,7 +211,8 @@ ClientsList.propTypes = {
   clients: PropTypes.array.isRequired,
   searchTerm: PropTypes.string,
   getClients: PropTypes.func.isRequired,
-  searchClients: PropTypes.func.isRequired
+  searchClients: PropTypes.func.isRequired,
+  updateClient: PropTypes.func.isRequired
 }
 
 export default compose(
