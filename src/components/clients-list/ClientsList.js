@@ -86,7 +86,6 @@ class ClientsList extends Component {
   }
 
   reorder = (list, startIndex, endIndex) => {
-    console.log(startIndex, endIndex)
     const { pagination: { start, limit } } = this.props
 
     // Getting new position indexes and replacing them in item's properties

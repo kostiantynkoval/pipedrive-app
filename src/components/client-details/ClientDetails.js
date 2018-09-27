@@ -168,7 +168,6 @@ class ClientDetails extends Component {
     this.setState({imgError: ''})
     const file = new FormData()
     file.append('file', e.target.files[0])
-    console.log(e.target.files[0])
     if(e.target.files[0].type === 'image/jpg' || e.target.files[0].type === 'image/jpeg' || e.target.files[0].type === 'image/png') {
       updateClientPicture(id, file)
     } else {
